@@ -23,7 +23,6 @@ class Loader:
         for c,line in enumerate(df2):
             yield{
                 '_index': 'trends_loader',
-                'id': c,
                 'load_date':line.get("date",""),
                 'term': line.get('term',''),
                 'value': line.get('value',''),
