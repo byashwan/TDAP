@@ -28,20 +28,20 @@ def Googleloader(word):
     html = requests.request('GET','https://www.google.com/search?q='+word, headers=headers)
     soup = BeautifulSoup(html.text, 'lxml')
     number_of_results = soup.select_one('#result-stats nobr').previous_sibling
-    result = re.sub(r'[a-zA-Z]', '',number_of_results)
-    elk_res['Load_Date']=today_date
-    elk_res['Term']=word
-    elk_res['Count']=result
-    # elk_search = client.search(index='google-trend', size=1,sort='_id:desc')
-    # document_count = elk_search['hits']['total']
-    response = client.index(index="google-trend",document=elk_res)
-    return result
+    result = re.sub(r'[a-zA-Z ,]', '',number_of_results)
+    elk_res['load_date']=today_date
+    elk_res['dount']=int(result)
+    elk_res['term']=word
+    try:
+        response = client.index(index="google-trend",document=elk_res, id=word+str(today_date))
+        print('working')
+    except Exception as e:
+        print(e)
 
-print(Googleloader('kafka'))
-print(Googleloader('mysql'))
-print(Googleloader('flink'))
-
-
+with open('a.txt') as f:
+    words = [line.rstrip('\n') for line in f]
+    for i in words:
+        a = Googleloader(i)
 
 
 
