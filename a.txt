@@ -1,0 +1,12 @@
+spark
+mysql
+postgresql
+kafka
+elasticsearch
+cassandra
+arrow
+flink
+mariadb
+ceph
+rocksdb
+prestodb
