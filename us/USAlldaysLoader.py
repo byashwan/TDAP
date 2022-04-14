@@ -21,7 +21,7 @@ class Loader:
     def generator(self,df2):
         for c,line in enumerate(df2):
             yield{
-                '_index': 'us_alldays_loader',
+                '_index': 'TDAP_Google_Trends_US_alldays',
                 '_id': line.get('id',''),
                 'load_date':line.get("date",""),
                 'term': line.get('term',''),
