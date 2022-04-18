@@ -3,25 +3,29 @@ try:
     from datetime import date, timedelta
     from elasticsearch import Elasticsearch
     from elasticsearch import helpers
+    import configparser
 except Exception as e:
     print("Modules Missing {}".format(e))
 
 
 class Loader:
-    def __init__(self,term):
+    def __init__(self,term,country,index,days):
         self.term=term
         self.pytrends = TrendReq()
+        self.country=country
+        self.index=index
+        self.days=days
         self.client = Elasticsearch(
             "https://localhost:9200",
             ca_certs="http_ca.crt",
             basic_auth=("elastic", "MUca56YstFyUy673Tn8M")
         )
-      
+       
 
     def generator(self,df2):
         for c,line in enumerate(df2):
             yield{
-                '_index': self.index,
+                '_index': 'tdap_google_trends_US_90days',
                 '_id': line.get('id',''),
                 'load_date':line.get("date",""),
                 'term': line.get('term',''),
@@ -43,7 +47,16 @@ class Loader:
             print(e)
 
     def insert_data(self):
-        self.pytrends.build_payload(kw_list=[self.term], timeframe='today 1-m',geo='CN')
+        print(self.days)
+        if self.days=='30':
+            tf='today 1-m'
+        elif self.days=='90':
+            tf='today 3-m'
+        elif self.days=='All':
+            tf='all'
+        print(tf)
+        
+        self.pytrends.build_payload(kw_list=[self.term], timeframe=tf,geo=self.country)
         df = self.pytrends.interest_over_time()
         df_rt = self.pytrends.related_topics()
         df_rq = self.pytrends.related_queries()
@@ -53,7 +66,7 @@ class Loader:
             related_topics_csv = []
         else:
             related_topics_csv = list(df_rt[obt_val]['top']['topic_title'])
-    
+        
         if df_rq[obt_val]['top'] is None:
             related_queries_csv=[]
         else:
@@ -77,17 +90,21 @@ class Loader:
                 fil.append(fid)
         return fil
 
-with open('../b.txt') as f:
-    words = [line.rstrip('\n') for line in f]
-    for i in words:
-        a = Loader(i)
-        print(i)
-        result1=a.insert_data()
-        if result1==0:
-            pass
-        #print(result1)
-        else:
-            a.elastic_insert(result1)
+cfg = configparser.ConfigParser()
+cfg.read('db.cfg')
+for section in cfg.sections():
+    country = cfg.get(section,'country').strip('"')
+    index = cfg.get(section,'index').strip()
+    days = cfg.get(section,'days').strip('"')
+    with open('b.txt') as f:
+        words = [line.rstrip('\n') for line in f]
+        for i in words:
+            a = Loader(i,country,index,days)
+            result1=a.insert_data()
+            if result1==0:
+                pass
+            else:
+                a.elastic_insert(result1)
 
 
 
