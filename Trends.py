@@ -47,14 +47,14 @@ class Loader:
             print(e)
 
     def insert_data(self):
-        print(self.days)
+        #print(self.days)
         if self.days=='30':
             tf='today 1-m'
         elif self.days=='90':
             tf='today 3-m'
         elif self.days=='All':
             tf='all'
-        print(tf)
+        #print(tf)
         
         self.pytrends.build_payload(kw_list=[self.term], timeframe=tf,geo=self.country)
         df = self.pytrends.interest_over_time()
